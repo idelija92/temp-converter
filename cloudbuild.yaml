@@ -7,14 +7,17 @@ steps:
 - name: python
   entrypoint: python
   args: ["-m", "pytest", "--junitxml=${SHORT_SHA}_test_log.xml"]
-
-  
-  # Build Docker image
+# Build Docker image
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '--tag=us-docker.pkg.dev/$PROJECT_ID/temp-converter-repo/temp-converter:$TAG_NAME', '.']
 # Push Docker image
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'us-docker.pkg.dev/$PROJECT_ID/temp-converter-repo/temp-converter:$TAG_NAME']
+# deploy to app engine 
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'bash'
+  args: ['-c', 'gcloud config set app/cloud_build_timeout 900 && gcloud app deploy --version=$TAG_NAME']
+  timeout: '900s'
 
 options:
   logging: CLOUD_LOGGING_ONLY  
